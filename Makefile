@@ -62,7 +62,3 @@ swag-gen:
 
 run:
 	go run ./cmd/main.go
-
-commit-all:
-	git add .
-	git commit -m "$(m)"
