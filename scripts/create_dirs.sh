@@ -27,6 +27,7 @@ echo "Creating default directory structure under $TARGET_PATH..."
 API_DIR="$TARGET_PATH/api"
 mkdir -p "$API_DIR/handlers"
 mkdir -p "$API_DIR/middleware"
+mkdir -p "$API_DIR/docs"
 touch "$API_DIR/routers.go"
 touch "$API_DIR/utils.go"
 echo "package handlers" > "$API_DIR/handlers/main_handler.go"
@@ -49,12 +50,21 @@ touch "$STORAGE_DIR/redis/redis.go"
 echo "package postgres" > "$STORAGE_DIR/postgres/postgres.go"
 echo "package redis" > "$STORAGE_DIR/redis/redis.go"
 
+# Create migrations directory
+MIGRATION_DIR="$TARGET_PATH/migrations"
+mkdir -p "$MIGRATION_DIR"
+
 # Create tests directory with subdirectories and files
 TESTS_DIR="$TARGET_PATH/tests"
 mkdir -p "$TESTS_DIR/handlers"
 mkdir -p "$TESTS_DIR/middleware"
 mkdir -p "$TESTS_DIR/storage/postgres"
 mkdir -p "$TESTS_DIR/storage/redis"
+
+LOGGER_DIR="$TARGET_PATH/logger"
+mkdir -p "$LOGGER_DIR"
+touch "$LOGGER_DIR/logger.go"
+echo "package logger" > "$LOGGER_DIR/logger.go"
 
 # Create test files with package declarations
 touch "$TESTS_DIR/handlers/main_handler_test.go"
@@ -84,3 +94,6 @@ echo "" >> "$TESTS_DIR/storage/redis/redis_test.go"
 echo "func TestExample(t *testing.T) {}" >> "$TESTS_DIR/storage/redis/redis_test.go"
 
 echo "Default directory structure created successfully."
+
+# create .env
+touch "config.env"
