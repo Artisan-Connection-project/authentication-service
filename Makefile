@@ -15,7 +15,6 @@ create-dirs:
 	fi; \
 	./scripts/create_dirs.sh "$$path"
 
-# Target to create migrations
 create-migrations:
 	@echo "Enter table name:"
 	@read -r table_name; \
@@ -23,11 +22,8 @@ create-migrations:
 		echo "Table name is required"; \
 		exit 1; \
 	fi; \
-	migrate create -ext sql -dir migration -seq "$$table_name"
+	migrate create -ext sql -dir migrations -seq "$$table_name"
 
-# Clean target (optional example)
-clean:
-	rm -f .path_env
 
 # Migration commands
 migrate_up:
@@ -52,7 +48,9 @@ migrate_go:
 		echo "goto number is required"; \
 		exit 1; \
 	fi; \
-	migrate -path migrations -database $(DB_URL) -verbose goto "$$version_num"
+	migrate -path migrations -database $(DB_URL) -verbose goto $version_num
+migrate_version:
+	migrate -database $(DB_URL) -path migrations -verbose version
 
 proto-gen:
 	./scripts/gen_proto.sh ${CURRENT_DIR}
