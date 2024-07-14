@@ -7,6 +7,7 @@ import (
 )
 
 type TokenRepository interface {
+	InsertRefreshToken(ctx context.Context, userId, token string) error
 	CreateToken(ctx context.Context, userID string) (string, error)
 	DeleteToken(ctx context.Context, token string) error
 	IsTokenValid(ctx context.Context, token string) bool
@@ -27,6 +28,11 @@ type tokenRepositoryImpl struct {
 
 func NewTokenRepository(db *sqlx.DB) TokenRepository {
 	return &tokenRepositoryImpl{db: db}
+}
+
+func (r *tokenRepositoryImpl) InsertRefreshToken(ctx context.Context, userID string, token string) error {
+
+	return nil
 }
 
 func (r *tokenRepositoryImpl) CreateToken(ctx context.Context, userID string) (string, error) {

@@ -68,14 +68,14 @@ func (r *userRepository) GetUsersInfo(ctx context.Context, page, limit int, orde
 func (r *userRepository) GetUserByUsernameOrEmail(ctx context.Context, email string, username string) (*models.User, error) {
 	var user models.User
 	if username != "" {
-		err := r.db.GetContext(ctx, &user, "SELECT id, username, full_name, bio, user_type, email FROM users WHERE username = $1 AND DELETED_AT IS NULL", username)
+		err := r.db.GetContext(ctx, &user, "SELECT id, username, full_name, bio, user_type, email, password_hash FROM users WHERE username = $1 AND DELETED_AT IS NULL", username)
 		if err != nil {
 			return nil, err
 		}
 		return &user, nil
 	}
 	if email != "" {
-		err := r.db.GetContext(ctx, &user, "SELECT id, username, full_name, bio, user_type, email FROM users WHERE email = $1 AND DELETED_AT IS NULL", email)
+		err := r.db.GetContext(ctx, &user, "SELECT id, username, full_name, bio, user_type, email, password_hash FROM users WHERE email = $1 AND DELETED_AT IS NULL", email)
 		if err != nil {
 			return nil, err
 		}

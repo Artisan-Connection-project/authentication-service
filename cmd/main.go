@@ -36,9 +36,9 @@ func main() {
 	authRepo := postgres.NewAuthenticationRepository(userRepo, hasher, db)
 	tokenRepo := postgres.NewTokenRepository(db)
 
-	tokenService := services.NewTokenService(tokenRepo)
+	tokenService := services.NewTokenService(tokenRepo, config.SecretKey)
 	userService := services.NewUserManagementService(userRepo)
-	authService := services.NewAuthenticationService(userRepo, authRepo)
+	authService := services.NewAuthenticationService(userRepo, authRepo, tokenService)
 
 	mainHandler := handlers.NewMainHandler(authService, userService, tokenService)
 

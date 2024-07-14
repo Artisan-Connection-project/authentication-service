@@ -1,6 +1,10 @@
 package postgres
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"log"
+
+	"golang.org/x/crypto/bcrypt"
+)
 
 type Hasher interface {
 	Hash(password string) string
@@ -21,7 +25,13 @@ func (h *bcryptHasherImple) Hash(password string) string {
 	return string(hashedPassword)
 }
 
-func (h *bcryptHasherImple) Compare(hashedPassword string, password string) bool {
+func (h *bcryptHasherImple) Compare(hashedPassword, password string) bool {
+	log.Println("Comparing passwords")
+	log.Println("Hashed Password:", hashedPassword)
+	log.Println("Plain Password:", password)
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	if err != nil {
+		log.Println("Password comparison error:", err)
+	}
 	return err == nil
 }

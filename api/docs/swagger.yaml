@@ -1,4 +1,124 @@
+basePath: /
+definitions:
+  authentication_service.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  authentication_service.RegisterRequest:
+    properties:
+      bio:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      password:
+        type: string
+      user_type:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8081
 info:
   contact: {}
-paths: {}
+  description: This is a sample server.
+  title: Testing auth API
+  version: "1.0"
+paths:
+  /api/v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login via password and username or email
+      parameters:
+      - description: Login username and  password
+        in: body
+        name: RegisterRequest
+        required: true
+        schema:
+          $ref: '#/definitions/authentication_service.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Singing in
+      tags:
+      - Authentication
+  /api/v1/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Creates new user with the given username and password and other
+        information
+      parameters:
+      - description: Register the new user with the given username and password
+        in: body
+        name: RegisterRequest
+        required: true
+        schema:
+          $ref: '#/definitions/authentication_service.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register the authentication
+      tags:
+      - Authentication
+schemes:
+- http
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

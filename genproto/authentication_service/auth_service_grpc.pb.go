@@ -46,6 +46,7 @@ type AuthenticationServiceClient interface {
 	GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*GetUserInfoResponse, error)
 	// Deletes the specified user's information
 	DeleteUserInfo(ctx context.Context, in *DeleteUserInfoRequest, opts ...grpc.CallOption) (*DeleteUserInfoResponse, error)
+	GenerateToken(ctx context.Context, in *GenerateTokenRequest, opts ...grpc.CallOption) (*GenerateTokenResponse, error)
 }
 
 type authenticationServiceClient struct {
@@ -164,6 +165,15 @@ func (c *authenticationServiceClient) DeleteUserInfo(ctx context.Context, in *De
 	return out, nil
 }
 
+func (c *authenticationServiceClient) GenerateToken(ctx context.Context, in *GenerateTokenRequest, opts ...grpc.CallOption) (*GenerateTokenResponse, error) {
+	out := new(GenerateTokenResponse)
+	err := c.cc.Invoke(ctx, "/authentication_service.AuthenticationService/GenerateToken", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthenticationServiceServer is the server API for AuthenticationService service.
 // All implementations must embed UnimplementedAuthenticationServiceServer
 // for forward compatibility
@@ -192,6 +202,7 @@ type AuthenticationServiceServer interface {
 	GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoResponse, error)
 	// Deletes the specified user's information
 	DeleteUserInfo(context.Context, *DeleteUserInfoRequest) (*DeleteUserInfoResponse, error)
+	GenerateToken(context.Context, *GenerateTokenRequest) (*GenerateTokenResponse, error)
 	mustEmbedUnimplementedAuthenticationServiceServer()
 }
 
@@ -234,6 +245,9 @@ func (UnimplementedAuthenticationServiceServer) GetUserInfo(context.Context, *Ge
 }
 func (UnimplementedAuthenticationServiceServer) DeleteUserInfo(context.Context, *DeleteUserInfoRequest) (*DeleteUserInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUserInfo not implemented")
+}
+func (UnimplementedAuthenticationServiceServer) GenerateToken(context.Context, *GenerateTokenRequest) (*GenerateTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenerateToken not implemented")
 }
 func (UnimplementedAuthenticationServiceServer) mustEmbedUnimplementedAuthenticationServiceServer() {}
 
@@ -464,6 +478,24 @@ func _AuthenticationService_DeleteUserInfo_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthenticationService_GenerateToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GenerateTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthenticationServiceServer).GenerateToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/authentication_service.AuthenticationService/GenerateToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthenticationServiceServer).GenerateToken(ctx, req.(*GenerateTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthenticationService_ServiceDesc is the grpc.ServiceDesc for AuthenticationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -518,6 +550,10 @@ var AuthenticationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteUserInfo",
 			Handler:    _AuthenticationService_DeleteUserInfo_Handler,
+		},
+		{
+			MethodName: "GenerateToken",
+			Handler:    _AuthenticationService_GenerateToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
