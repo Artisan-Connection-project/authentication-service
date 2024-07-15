@@ -77,7 +77,6 @@ func (h *authenticationHandlerImpl) Login(ctx *gin.Context) {
 }
 
 func (h *authenticationHandlerImpl) Logout(ctx *gin.Context) {
-	// Implement logout logic
 }
 
 func (h *authenticationHandlerImpl) ResetPassword(ctx *gin.Context) {

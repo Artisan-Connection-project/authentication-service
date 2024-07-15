@@ -17,16 +17,15 @@ type claims struct {
 }
 
 type TokenService interface {
-	RefreshToken(ctx context.Context, req *auth.RefreshTokenRequest) (*auth.RefreshTokenResponse, error)
-	VerifyToken(ctx context.Context, req *auth.VerifyTokenRequest) (*auth.VerifyTokenResponse, error)
-	CancelToken(ctx context.Context, req *auth.CancelTokenRequest) (*auth.CancelTokenResponse, error)
+	RefreshToken(ctx context.Context, userID string, req *auth.RefreshTokenRequest) (*auth.RefreshTokenResponse, error)
+	VerifyToken(ctx context.Context, userID string, req *auth.VerifyTokenRequest) (*auth.VerifyTokenResponse, error)
+	CancelToken(ctx context.Context, userID string, req *auth.CancelTokenRequest) (*auth.CancelTokenResponse, error)
 	GenerateToken(ctx context.Context, req *auth.GenerateTokenRequest) (*auth.GenerateTokenResponse, error)
 }
 
 type tokenServiceImpl struct {
 	jwtSecretKey []byte
-	auth.UnimplementedAuthenticationServiceServer
-	tokenRepo postgres.TokenRepository
+	tokenRepo    postgres.TokenRepository
 }
 
 func NewTokenService(tokenRepo postgres.TokenRepository, jwtSecretKey string) TokenService {
@@ -36,14 +35,28 @@ func NewTokenService(tokenRepo postgres.TokenRepository, jwtSecretKey string) To
 	}
 }
 
-func (s *tokenServiceImpl) VerifyToken(ctx context.Context, req *auth.VerifyTokenRequest) (*auth.VerifyTokenResponse, error) {
-	// Implement token verification logic
-	return &auth.VerifyTokenResponse{}, nil
+func (s *tokenServiceImpl) VerifyToken(ctx context.Context, userID string, req *auth.VerifyTokenRequest) (*auth.VerifyTokenResponse, error) {
+	token, err := jwt.ParseWithClaims(req.AccessToken, &claims{}, func(token *jwt.Token) (interface{}, error) {
+		return s.jwtSecretKey, nil
+	})
+	if err != nil || !token.Valid {
+		return &auth.VerifyTokenResponse{
+			IsValid: false,
+		}, err
+	}
+	return &auth.VerifyTokenResponse{
+		IsValid: true,
+	}, nil
 }
 
-func (s *tokenServiceImpl) CancelToken(ctx context.Context, req *auth.CancelTokenRequest) (*auth.CancelTokenResponse, error) {
-	// Implement token cancellation logic
-	return &auth.CancelTokenResponse{}, nil
+func (s *tokenServiceImpl) CancelToken(ctx context.Context, userID string, req *auth.CancelTokenRequest) (*auth.CancelTokenResponse, error) {
+	err := s.tokenRepo.DeleteToken(ctx, req.AccessToken)
+	if err != nil {
+		return nil, err
+	}
+	return &auth.CancelTokenResponse{
+		Message: "Token has been invalidated",
+	}, nil
 }
 
 func (s *tokenServiceImpl) GenerateToken(ctx context.Context, req *auth.GenerateTokenRequest) (*auth.GenerateTokenResponse, error) {
@@ -55,7 +68,7 @@ func (s *tokenServiceImpl) GenerateToken(ctx context.Context, req *auth.Generate
 			Issuer:    "authentication-service",
 			ExpiresAt: expirationTimeForRefreshToken.Unix(),
 		},
-		Email:    req.Email,
+		Email:    req.Eamil,
 		Username: req.Username,
 		Password: req.Password,
 	}
@@ -65,32 +78,35 @@ func (s *tokenServiceImpl) GenerateToken(ctx context.Context, req *auth.Generate
 			Issuer:    "authentication-service",
 			ExpiresAt: expirationTimeForAccessToken.Unix(),
 		},
-		Email:    req.Email,
+		Email:    req.Eamil,
 		Username: req.Username,
 		Password: req.Password,
 	}
+
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claimsForAccessToken)
 	accessTokenString, err := accessToken.SignedString(s.jwtSecretKey)
 	if err != nil {
 		return nil, err
 	}
+
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claimsForRefreshToken)
 	refreshTokenString, err := refreshToken.SignedString(s.jwtSecretKey)
 	if err != nil {
 		return nil, err
 	}
 
-	err = s.tokenRepo.InsertRefreshToken(ctx, req.Email, refreshTokenString)
+	err = s.tokenRepo.CreateRefreshToken(ctx, req.Eamil, refreshTokenString)
 	if err != nil {
 		return nil, err
 	}
+
 	return &auth.GenerateTokenResponse{
 		AccessToken:  accessTokenString,
 		RefreshToken: refreshTokenString,
 	}, nil
 }
 
-func (s *tokenServiceImpl) RefreshToken(ctx context.Context, req *auth.RefreshTokenRequest) (*auth.RefreshTokenResponse, error) {
+func (s *tokenServiceImpl) RefreshToken(ctx context.Context, userID string, req *auth.RefreshTokenRequest) (*auth.RefreshTokenResponse, error) {
 	token, err := jwt.ParseWithClaims(req.RefreshToken, &claims{}, func(token *jwt.Token) (interface{}, error) {
 		return s.jwtSecretKey, nil
 	})

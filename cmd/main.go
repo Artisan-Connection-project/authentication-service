@@ -44,7 +44,7 @@ func main() {
 
 	router := gin.Default()
 
-	api.SetupRouters(router, mainHandler)
+	api.SetupRouters(router, mainHandler, config)
 
 	err = router.Run(":" + config.GinServerPort)
 	if err != nil {

@@ -9,6 +9,13 @@ definitions:
       username:
         type: string
     type: object
+  authentication_service.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+      user_id:
+        type: string
+    type: object
   authentication_service.RegisterRequest:
     properties:
       bio:
@@ -18,6 +25,21 @@ definitions:
       full_name:
         type: string
       password:
+        type: string
+      user_type:
+        type: string
+      username:
+        type: string
+    type: object
+  authentication_service.UpdateUserInfoRequest:
+    properties:
+      bio:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      id:
         type: string
       user_type:
         type: string
@@ -114,6 +136,211 @@ paths:
       summary: Register the authentication
       tags:
       - Authentication
+  /api/v1/tokens/refresh-token/{user_id}:
+    post:
+      consumes:
+      - application/json
+      description: Refreshes an existing access token using a refresh token
+      parameters:
+      - description: Refresh Token Request
+        in: body
+        name: refreshToken
+        required: true
+        schema:
+          $ref: '#/definitions/authentication_service.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Refresh a token
+      tags:
+      - Tokens
+  /api/v1/users/all:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of users with pagination and sorting
+      parameters:
+      - description: Number of users per page
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: Page number
+        in: query
+        name: page
+        required: true
+        type: integer
+      - description: Field to order by (e.g., 'name', 'email')
+        in: query
+        name: order_by
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all users with pagination and sorting
+      tags:
+      - User Management
+  /api/v1/users/profile/:
+    put:
+      consumes:
+      - application/json
+      description: Update user by the provided fields
+      parameters:
+      - description: update user information
+        in: body
+        name: updatedUser
+        required: true
+        schema:
+          $ref: '#/definitions/authentication_service.UpdateUserInfoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update user by the updated fields
+      tags:
+      - User Management
+  /api/v1/users/profile/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete user info by the provided id
+      parameters:
+      - description: user id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete user info by the provided id
+      tags:
+      - User Management
+  /api/v1/users/profile/{user_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get user by its id
+      parameters:
+      - description: user id
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Getting user by its id
+      tags:
+      - User Management
 schemes:
 - http
 securityDefinitions:
