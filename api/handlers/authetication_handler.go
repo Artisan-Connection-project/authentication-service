@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"authentication-service/genproto/authentication_service"
+	auth "authentication-service/genproto/authentication_service"
 	"authentication-service/services"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -77,12 +79,65 @@ func (h *authenticationHandlerImpl) Login(ctx *gin.Context) {
 }
 
 func (h *authenticationHandlerImpl) Logout(ctx *gin.Context) {
-}
+	var req auth.LogoutRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-func (h *authenticationHandlerImpl) ResetPassword(ctx *gin.Context) {
-	// Implement password reset logic
+	_, err := h.authService.Logout(ctx.Request.Context(), &req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }
 
 func (h *authenticationHandlerImpl) ChangePassword(ctx *gin.Context) {
-	// Implement password change logic
+	var req auth.ChangePasswordRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	_, err := h.authService.ChangePassword(ctx.Request.Context(), &req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Password changed successfully"})
 }
+
+func (h *authenticationHandlerImpl) ResetPassword(ctx *gin.Context) {
+	var req auth.ResetPasswordRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	_, err := h.authService.ResetPassword(ctx.Request.Context(), &req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Password reset email sent successfully"})
+}
+
+// func (h *authenticationHandlerImpl) VerifyResetCode(ctx *gin.Context) {
+// 	var req auth.VerifyResetCodeRequest
+// 	if err := ctx.ShouldBindJSON(&req); err != nil {
+// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+// 		return
+// 	}
+
+// 	_, err := h.authService.VerifyResetCode(ctx.Request.Context(), &req)
+// 	if err != nil {
+// 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+// 		return
+// 	}
+
+// 	ctx.JSON(http.StatusOK, gin.H{"message": "Password reset successfully"})
+// }

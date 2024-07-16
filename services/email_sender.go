@@ -1,34 +1,45 @@
 package services
 
 import (
+	"bytes"
+	"fmt"
+	"html/template"
 	"net/smtp"
-
-	"github.com/jordan-wright/email"
 )
 
-type EmailSender interface {
-	SendResetEmail(to, token string) error
+type EmailService interface {
+	SendCode(email, code string) error
 }
 
-type emailSenderImpl struct {
-	smtpAddr    string
-	smtpAuth    smtp.Auth
-	fromAddress string
+type emailServiceImpl struct {
+	from     string
+	password string
+	smtpHost string
+	smtpPort string
 }
 
-func NewEmailSender(smtpAddr, username, password, fromAddress string) EmailSender {
-	return &emailSenderImpl{
-		smtpAddr:    smtpAddr,
-		smtpAuth:    smtp.PlainAuth("", username, password, smtpAddr),
-		fromAddress: fromAddress,
+func NewEmailService(from, password, smtpHost, smtpPort string) EmailService {
+	return &emailServiceImpl{
+		from:     from,
+		password: password,
+		smtpHost: smtpHost,
+		smtpPort: smtpPort,
 	}
 }
 
-func (es *emailSenderImpl) SendResetEmail(to, token string) error {
-	e := email.NewEmail()
-	e.From = es.fromAddress
-	e.To = []string{to}
-	e.Subject = "Password Reset"
-	e.Text = []byte("Use this token to reset your password: " + token)
-	return e.Send(es.smtpAddr, es.smtpAuth)
+func (e *emailServiceImpl) SendCode(email, code string) error {
+	to := []string{email}
+	auth := smtp.PlainAuth("", e.from, e.password, e.smtpHost)
+
+	t, err := template.ParseFiles("template.html")
+	if err != nil {
+		return err
+	}
+
+	var body bytes.Buffer
+	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
+	body.Write([]byte(fmt.Sprintf("Subject: Your verification code \n%s\n\n", mimeHeaders)))
+	t.Execute(&body, struct{ Passwd string }{Passwd: code})
+
+	return smtp.SendMail(e.smtpHost+":"+e.smtpPort, auth, e.from, to, body.Bytes())
 }

@@ -1,5 +1,10 @@
 basePath: /
 definitions:
+  authentication_service.CancelTokenRequest:
+    properties:
+      access_token:
+        type: string
+    type: object
   authentication_service.LoginRequest:
     properties:
       email:
@@ -341,6 +346,47 @@ paths:
       summary: Getting user by its id
       tags:
       - User Management
+  /revoke/{user_id}:
+    post:
+      consumes:
+      - application/json
+      description: Cancels a given access or refresh token
+      parameters:
+      - description: Cancel Token Request
+        in: body
+        name: cancelToken
+        required: true
+        schema:
+          $ref: '#/definitions/authentication_service.CancelTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Cancel a token
+      tags:
+      - Tokens
 schemes:
 - http
 securityDefinitions:

@@ -36,8 +36,6 @@ type AuthenticationServiceClient interface {
 	RefreshToken(ctx context.Context, in *RefreshTokenRequest, opts ...grpc.CallOption) (*RefreshTokenResponse, error)
 	// Verifies the provided access token
 	VerifyToken(ctx context.Context, in *VerifyTokenRequest, opts ...grpc.CallOption) (*VerifyTokenResponse, error)
-	// Cancels an access token, making it unusable
-	CancelToken(ctx context.Context, in *CancelTokenRequest, opts ...grpc.CallOption) (*CancelTokenResponse, error)
 	// Retrieves a list of users with optional pagination and sorting
 	GetUsersInfo(ctx context.Context, in *GetUsersInfoRequest, opts ...grpc.CallOption) (*GetUsersInfoResponse, error)
 	// Updates the specified user's information
@@ -120,15 +118,6 @@ func (c *authenticationServiceClient) VerifyToken(ctx context.Context, in *Verif
 	return out, nil
 }
 
-func (c *authenticationServiceClient) CancelToken(ctx context.Context, in *CancelTokenRequest, opts ...grpc.CallOption) (*CancelTokenResponse, error) {
-	out := new(CancelTokenResponse)
-	err := c.cc.Invoke(ctx, "/authentication_service.AuthenticationService/CancelToken", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *authenticationServiceClient) GetUsersInfo(ctx context.Context, in *GetUsersInfoRequest, opts ...grpc.CallOption) (*GetUsersInfoResponse, error) {
 	out := new(GetUsersInfoResponse)
 	err := c.cc.Invoke(ctx, "/authentication_service.AuthenticationService/GetUsersInfo", in, out, opts...)
@@ -192,8 +181,6 @@ type AuthenticationServiceServer interface {
 	RefreshToken(context.Context, *RefreshTokenRequest) (*RefreshTokenResponse, error)
 	// Verifies the provided access token
 	VerifyToken(context.Context, *VerifyTokenRequest) (*VerifyTokenResponse, error)
-	// Cancels an access token, making it unusable
-	CancelToken(context.Context, *CancelTokenRequest) (*CancelTokenResponse, error)
 	// Retrieves a list of users with optional pagination and sorting
 	GetUsersInfo(context.Context, *GetUsersInfoRequest) (*GetUsersInfoResponse, error)
 	// Updates the specified user's information
@@ -230,9 +217,6 @@ func (UnimplementedAuthenticationServiceServer) RefreshToken(context.Context, *R
 }
 func (UnimplementedAuthenticationServiceServer) VerifyToken(context.Context, *VerifyTokenRequest) (*VerifyTokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method VerifyToken not implemented")
-}
-func (UnimplementedAuthenticationServiceServer) CancelToken(context.Context, *CancelTokenRequest) (*CancelTokenResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CancelToken not implemented")
 }
 func (UnimplementedAuthenticationServiceServer) GetUsersInfo(context.Context, *GetUsersInfoRequest) (*GetUsersInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUsersInfo not implemented")
@@ -388,24 +372,6 @@ func _AuthenticationService_VerifyToken_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AuthenticationService_CancelToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CancelTokenRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AuthenticationServiceServer).CancelToken(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/authentication_service.AuthenticationService/CancelToken",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthenticationServiceServer).CancelToken(ctx, req.(*CancelTokenRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _AuthenticationService_GetUsersInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetUsersInfoRequest)
 	if err := dec(in); err != nil {
@@ -530,10 +496,6 @@ var AuthenticationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "VerifyToken",
 			Handler:    _AuthenticationService_VerifyToken_Handler,
-		},
-		{
-			MethodName: "CancelToken",
-			Handler:    _AuthenticationService_CancelToken_Handler,
 		},
 		{
 			MethodName: "GetUsersInfo",

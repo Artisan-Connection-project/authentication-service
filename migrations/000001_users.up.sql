@@ -1,4 +1,4 @@
-CREATE TYPE user_type AS ENUM('artisant', 'admin', 'customer', 'other', 'user');
+CREATE TYPE user_type AS ENUM('artisan', 'admin', 'customer', 'other', 'user');
 
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -23,4 +23,4 @@ INSERT INTO users (id, username, email, password_hash, full_name, user_type, bio
     (gen_random_uuid(), 'fjones', 'fjones@example.com', 'hashedpassword7', 'Frank Jones', 'user', 'Regular user', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
     (gen_random_uuid(), 'gmartin', 'gmartin@example.com', 'hashedpassword8', 'Grace Martin', 'user', 'Regular user', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
     (gen_random_uuid(), 'hmiller', 'hmiller@example.com', 'hashedpassword9', 'Hannah Miller', 'user', 'Regular user', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    (gen_random_uuid(), 'ijackson', 'ijackson@example.com', 'hashedpassword10', 'Ian Jackson', 'user', 'Regular user', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+    (gen_random_uuid(), 'ijackson', 'ijackson@example.com', 'hashedpassword10', 'Ian Jackson', 'artisan', 'Regular user', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);

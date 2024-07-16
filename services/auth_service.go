@@ -2,12 +2,13 @@ package services
 
 import (
 	auth "authentication-service/genproto/authentication_service"
+	"authentication-service/models"
 	"authentication-service/storage/postgres"
 	"context"
 	"fmt"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis"
 )
 
 type AuthenticationService interface {
@@ -23,63 +24,109 @@ type authenticationServiceImpl struct {
 	authRepo     postgres.AuthenticationRepository
 	tokenService TokenService
 	redisClient  *redis.Client
-	emailSender  EmailSender
+	emailService EmailService
 }
 
-func NewAuthenticationService(userRepo postgres.UserRepository, authRepo postgres.AuthenticationRepository, tokenService TokenService, redisClient *redis.Client, emailSender EmailSender) AuthenticationService {
+func NewAuthenticationService(authRepo postgres.AuthenticationRepository, tokenService TokenService, emailService EmailService) AuthenticationService {
 	return &authenticationServiceImpl{
 		authRepo:     authRepo,
 		tokenService: tokenService,
-		redisClient:  redisClient,
-		emailSender:  emailSender,
+
+		emailService: emailService,
 	}
+}
+
+func (s *authenticationServiceImpl) Register(ctx context.Context, req *auth.RegisterRequest) (*auth.RegisterResponse, error) {
+	var userModler models.User
+
+	userModler.FullName = req.GetFullName()
+	userModler.Username = req.GetUsername()
+	userModler.Email = req.GetEmail()
+	userModler.Bio = req.GetBio()
+	userModler.UserType = req.GetUserType()
+	userModler.PasswordHash = req.GetPassword() // original password
+
+	err := s.authRepo.Register(ctx, &userModler)
+	if err != nil {
+		return nil, err
+	}
+
+	return &auth.RegisterResponse{}, nil
+}
+
+func (s *authenticationServiceImpl) Login(ctx context.Context, req *auth.LoginRequest) (*auth.LoginResponse, error) {
+	user, err := s.authRepo.Login(ctx, req.Username, req.Email, req.Password)
+	if err != nil {
+		return nil, err
+	}
+	var gReqToken auth.GenerateTokenRequest
+	gReqToken.Eamil = user.Email
+	gReqToken.Username = user.Username
+	gReqToken.Password = user.PasswordHash
+
+	resToken, err := s.tokenService.GenerateToken(ctx, &gReqToken)
+	if err != nil {
+		return nil, err
+	}
+
+	return &auth.LoginResponse{
+		AccessToken:  resToken.AccessToken,
+		RefreshToken: resToken.RefreshToken,
+	}, nil
+}
+
+func (s *authenticationServiceImpl) Logout(ctx context.Context, req *auth.LogoutRequest) (*auth.LogoutResponse, error) {
+	return &auth.LogoutResponse{}, nil
+}
+
+func (s *authenticationServiceImpl) ChangePassword(ctx context.Context, req *auth.ChangePasswordRequest) (*auth.ChangePasswordResponse, error) {
+	return &auth.ChangePasswordResponse{}, nil
 }
 
 func (s *authenticationServiceImpl) ResetPassword(ctx context.Context, req *auth.ResetPasswordRequest) (*auth.ResetPasswordResponse, error) {
 	user, err := s.authRepo.GetUserByEmail(ctx, req.Email)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("user not found")
 	}
 
-	resetToken := generateRandomToken() // Implement this function to generate a random token
-	err = s.redisClient.Set(ctx, resetToken, user.Email, time.Hour).Err()
+	resetCode := generateRandomCode()
+
+	err = s.redisClient.Set(fmt.Sprintf("reset_code:%s", user.Email), resetCode, time.Minute*10).Err()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to store reset code")
 	}
 
-	err = s.emailSender.SendResetEmail(user.Email, resetToken) // Implement this function to send email
+	err = s.emailService.SendCode(user.Email, resetCode)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to send reset code")
 	}
 
-	return &auth.ResetPasswordResponse{}, nil
+	return &auth.ResetPasswordResponse{Message: "Reset code sent to email"}, nil
 }
 
-func (s *authenticationServiceImpl) ChangePassword(ctx context.Context, req *auth.ChangePasswordRequest) (*auth.ChangePasswordResponse, error) {
-	user, err := s.authRepo.GetUserByEmail(ctx, req.Email)
+func (s *authenticationServiceImpl) VerifyResetCode(ctx context.Context, req *auth.VerifyResetCodeRequest) (*auth.VerifyResetCodeResponse, error) {
+	storedCode, err := s.redisClient.Get(fmt.Sprintf("reset_code:%s", req.Email)).Result()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("invalid or expired reset code")
 	}
 
-	if !s.authRepo.Hasher.Compare(user.PasswordHash, req.CurrentPassword) {
-		return nil, fmt.Errorf("current password mismatch")
+	if req.Code != storedCode {
+		return nil, fmt.Errorf("invalid reset code")
 	}
 
-	hashedPassword := s.authRepo.Hasher.Hash(req.NewPassword)
-	user.PasswordHash = hashedPassword
-
-	err = s.authRepo.UpdatePassword(ctx, user)
+	err = s.authRepo.UpdatePassword(ctx, req.Email, req.NewPassword)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to update password")
 	}
 
-	return &auth.ChangePasswordResponse{}, nil
+	err = s.redisClient.Del(fmt.Sprintf("reset_code:%s", req.Email)).Err()
+	if err != nil {
+		return nil, fmt.Errorf("failed to delete reset code")
+	}
+
+	return &auth.VerifyResetCodeResponse{Message: "Password reset successfully"}, nil
 }
 
-func (s *authenticationServiceImpl) Logout(ctx context.Context, req *auth.LogoutRequest) (*auth.LogoutResponse, error) {
-	err := s.tokenService.InvalidateToken(ctx, req.Token) // Implement this function to invalidate token
-	if err != nil {
-		return nil, err
-	}
-	return &auth.LogoutResponse{}, nil
+func generateRandomCode() string {
+	return "123456"
 }

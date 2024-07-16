@@ -58,7 +58,7 @@ func SetupRouters(r *gin.Engine, h handlers.MainHandler, config *configs.Config)
 		tokens := api.Group("/tokens")
 		{
 			tokens.POST("/refresh-token/:user_id", h.Token().RefreshToken)
-			tokens.GET("/revoke/:user_id", h.Token().CancelToken)
+			// tokens.GET("/revoke/:user_id", h.Token().CancelToken)
 		}
 	}
 }

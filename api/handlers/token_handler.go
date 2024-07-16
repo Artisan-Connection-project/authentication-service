@@ -10,7 +10,7 @@ import (
 
 type TokenHandler interface {
 	RefreshToken(ctx *gin.Context)
-	CancelToken(ctx *gin.Context)
+	// CancelToken(ctx *gin.Context)
 }
 
 type tokenHandlerImpl struct {
@@ -66,31 +66,31 @@ func (h *tokenHandlerImpl) RefreshToken(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// @Summary Cancel a token
-// @Description Cancels a given access or refresh token
-// @Tags Tokens
-// @Accept  json
-// @Produce  json
-// @Param cancelToken body authentication_service.CancelTokenRequest true "Cancel Token Request"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]string
-// @Failure 401 {object} map[string]string
-// @Failure 500 {object} map[string]string
-// @Router /revoke/{user_id} [post]
-func (h *tokenHandlerImpl) CancelToken(c *gin.Context) {
-	userID := c.Param("user_id")
+// // @Summary Cancel a token
+// // @Description Cancels a given access or refresh token
+// // @Tags Tokens
+// // @Accept  json
+// // @Produce  json
+// // @Param cancelToken body authentication_service.CancelTokenRequest true "Cancel Token Request"
+// // @Success 200 {object} map[string]interface{}
+// // @Failure 400 {object} map[string]string
+// // @Failure 401 {object} map[string]string
+// // @Failure 500 {object} map[string]string
+// // @Router /revoke/{user_id} [post]
+// func (h *tokenHandlerImpl) CancelToken(c *gin.Context) {
+// 	userID := c.Param("user_id")
 
-	var req auth.CancelTokenRequest
-	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
-		return
-	}
+// 	var req auth.CancelTokenRequest
+// 	if err := c.BindJSON(&req); err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+// 		return
+// 	}
 
-	resp, err := h.tokenService.CancelToken(c, userID, &req)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to cancel token"})
-		return
-	}
+// 	resp, err := h.tokenService.CancelToken(c, userID, &req)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to cancel token"})
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, resp)
-}
+// 	c.JSON(http.StatusOK, resp)
+// }

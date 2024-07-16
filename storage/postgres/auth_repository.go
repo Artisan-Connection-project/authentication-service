@@ -12,8 +12,10 @@ type AuthenticationRepository interface {
 	Login(ctx context.Context, username, email, password string) (*models.User, error)
 	Logout(ctx context.Context, token string) error
 	Register(ctx context.Context, user *models.User) error
-	ResetPassword(ctx context.Context, email string) error
+	ResetPassword(ctx context.Context, email, username, newPassword string) error
 	ChangePassword(ctx context.Context, userID, currentPassword, newPassword string) error
+	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
+	UpdatePassword(ctx context.Context, email, newPassword string) error
 }
 
 type authenticationRepositoryImpl struct {
@@ -24,6 +26,23 @@ type authenticationRepositoryImpl struct {
 
 func NewAuthenticationRepository(userRepository UserRepository, hasher Hasher, db *sqlx.DB) AuthenticationRepository {
 	return &authenticationRepositoryImpl{userRepository: userRepository, hasher: hasher, db: db}
+}
+
+// Implement the GetUserByEmail method
+func (r *authenticationRepositoryImpl) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
+	var user models.User
+	err := r.db.GetContext(ctx, &user, "SELECT * FROM users WHERE email = $1", email)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+// Implement the UpdatePassword method
+func (r *authenticationRepositoryImpl) UpdatePassword(ctx context.Context, email, newPassword string) error {
+	hashedPassword := r.hasher.Hash(newPassword)
+	_, err := r.db.ExecContext(ctx, "UPDATE users SET password_hash = $1 WHERE email = $2", hashedPassword, email)
+	return err
 }
 
 func (r *authenticationRepositoryImpl) Register(ctx context.Context, user *models.User) error {
@@ -51,8 +70,30 @@ func (r *authenticationRepositoryImpl) Logout(ctx context.Context, token string)
 	// Implement logout logic using the provided token
 	return nil
 }
-func (r *authenticationRepositoryImpl) ResetPassword(ctx context.Context, email string) error {
-	// Implement password reset logic using the provided email
+func (r *authenticationRepositoryImpl) ResetPassword(ctx context.Context, email string, username string, newPassword string) error {
+	var user models.User
+	if username != "" {
+		err := r.db.GetContext(ctx, &user, "SELECT * FROM users WHERE username = $1", username)
+		if err != nil {
+			return err
+		}
+	}
+	if email != "" {
+		err := r.db.GetContext(ctx, &user, "SELECT * FROM users WHERE email = $1", email)
+		if err != nil {
+			return err
+		}
+	}
+
+	hashedPassword := r.hasher.Hash(newPassword)
+
+	user.PasswordHash = hashedPassword
+
+	_, err := r.userRepository.UpdateUser(ctx, &user)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

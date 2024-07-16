@@ -19,13 +19,13 @@ type claims struct {
 type TokenService interface {
 	RefreshToken(ctx context.Context, userID string, req *auth.RefreshTokenRequest) (*auth.RefreshTokenResponse, error)
 	VerifyToken(ctx context.Context, userID string, req *auth.VerifyTokenRequest) (*auth.VerifyTokenResponse, error)
-	CancelToken(ctx context.Context, userID string, req *auth.CancelTokenRequest) (*auth.CancelTokenResponse, error)
 	GenerateToken(ctx context.Context, req *auth.GenerateTokenRequest) (*auth.GenerateTokenResponse, error)
 }
 
 type tokenServiceImpl struct {
 	jwtSecretKey []byte
 	tokenRepo    postgres.TokenRepository
+	auth.UnimplementedAuthenticationServiceServer
 }
 
 func NewTokenService(tokenRepo postgres.TokenRepository, jwtSecretKey string) TokenService {
@@ -49,15 +49,15 @@ func (s *tokenServiceImpl) VerifyToken(ctx context.Context, userID string, req *
 	}, nil
 }
 
-func (s *tokenServiceImpl) CancelToken(ctx context.Context, userID string, req *auth.CancelTokenRequest) (*auth.CancelTokenResponse, error) {
-	err := s.tokenRepo.DeleteToken(ctx, req.AccessToken)
-	if err != nil {
-		return nil, err
-	}
-	return &auth.CancelTokenResponse{
-		Message: "Token has been invalidated",
-	}, nil
-}
+// func (s *tokenServiceImpl) CancelToken(ctx context.Context, userID string, req *auth.CancelTokenRequest) (*auth.CancelTokenResponse, error) {
+// 	err := s.tokenRepo.DeleteToken(ctx, req.AccessToken)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return &auth.CancelTokenResponse{
+// 		Message: "Token has been invalidated",
+// 	}, nil
+// }
 
 func (s *tokenServiceImpl) GenerateToken(ctx context.Context, req *auth.GenerateTokenRequest) (*auth.GenerateTokenResponse, error) {
 	expirationTimeForRefreshToken := time.Now().Add(time.Hour * 48)
