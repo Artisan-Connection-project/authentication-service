@@ -3,6 +3,7 @@ package api
 import (
 	_ "authentication-service/api/docs"
 	"authentication-service/api/handlers"
+	"authentication-service/api/middleware"
 	"authentication-service/configs"
 
 	"github.com/gin-gonic/gin"
@@ -41,8 +42,11 @@ func SetupRouters(r *gin.Engine, h handlers.MainHandler, config *configs.Config)
 			auth.POST("/reset-password", h.Authentication().ResetPassword)
 
 			auth.POST("/change-password", h.Authentication().ChangePassword)
+
+			auth.POST("/verify_email", h.Authentication().VerifyEmailCode)
 		}
 
+		r.Use(middleware.AuthMiddleware(config.SecretKey))
 		users := api.Group("/users")
 		{
 			users.GET("/all", h.User().GetUsers)

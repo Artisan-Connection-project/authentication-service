@@ -17,6 +17,7 @@ type AuthenticationService interface {
 	Register(ctx context.Context, req *auth.RegisterRequest) (*auth.RegisterResponse, error)
 	ResetPassword(ctx context.Context, req *auth.ResetPasswordRequest) (*auth.ResetPasswordResponse, error)
 	ChangePassword(ctx context.Context, req *auth.ChangePasswordRequest) (*auth.ChangePasswordResponse, error)
+	VerifyEmailCodeAndUpdateUserInfo(ctx context.Context, email string) error
 }
 
 type authenticationServiceImpl struct {
@@ -129,4 +130,8 @@ func (s *authenticationServiceImpl) VerifyResetCode(ctx context.Context, req *au
 
 func generateRandomCode() string {
 	return "123456"
+}
+
+func (s *authenticationServiceImpl) VerifyEmailCodeAndUpdateUserInfo(ctx context.Context, email string) error {
+	return s.authRepo.UpdateUserToActive(ctx, email)
 }

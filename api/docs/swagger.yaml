@@ -1,5 +1,12 @@
 basePath: /
 definitions:
+  authentication_service.ChangePasswordRequest:
+    properties:
+      new_password:
+        type: string
+      old_password:
+        type: string
+    type: object
   authentication_service.LoginRequest:
     properties:
       email:
@@ -31,6 +38,11 @@ definitions:
       username:
         type: string
     type: object
+  authentication_service.ResetPasswordRequest:
+    properties:
+      email:
+        type: string
+    type: object
   authentication_service.UpdateUserInfoRequest:
     properties:
       bio:
@@ -53,6 +65,49 @@ info:
   title: Testing auth API
   version: "1.0"
 paths:
+  /api/v1/auth/change-password:
+    post:
+      consumes:
+      - application/json
+      description: Change password
+      parameters:
+      - description: Change password
+        in: body
+        name: ChangePassword
+        required: true
+        schema:
+          $ref: '#/definitions/authentication_service.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Change password
+      tags:
+      - Authentication
   /api/v1/auth/login:
     post:
       consumes:
@@ -136,6 +191,93 @@ paths:
       summary: Register the authentication
       tags:
       - Authentication
+  /api/v1/auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Reset password via email
+      parameters:
+      - description: Reset password
+        in: body
+        name: ResetPassword
+        required: true
+        schema:
+          $ref: '#/definitions/authentication_service.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Reset password
+      tags:
+      - Authentication
+  /api/v1/auth/verify_email:
+    post:
+      consumes:
+      - application/json
+      description: Verify Registration code
+      parameters:
+      - description: verification code
+        in: query
+        name: code
+        required: true
+        type: string
+      - description: email
+        in: query
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      tags:
+      - Authentication
   /api/v1/tokens/refresh-token/{user_id}:
     post:
       consumes:
@@ -174,6 +316,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Refresh a token
       tags:
       - Tokens
@@ -217,7 +361,9 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Get all users with pagination and sorting
+      security:
+      - BearerAuth: []
+      summary: Get all users with page and sorting
       tags:
       - User Management
   /api/v1/users/profile/:
@@ -258,6 +404,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Update user by the updated fields
       tags:
       - User Management
@@ -298,6 +446,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Delete user info by the provided id
       tags:
       - User Management
@@ -338,6 +488,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Getting user by its id
       tags:
       - User Management
@@ -377,6 +529,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Change user type
       tags:
       - User Management

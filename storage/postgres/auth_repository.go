@@ -16,6 +16,7 @@ type AuthenticationRepository interface {
 	ChangePassword(ctx context.Context, userID, currentPassword, newPassword string) error
 	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
 	UpdatePassword(ctx context.Context, email, newPassword string) error
+	UpdateUserToActive(ctx context.Context, email string) error
 }
 
 type authenticationRepositoryImpl struct {
@@ -49,8 +50,8 @@ func (r *authenticationRepositoryImpl) Register(ctx context.Context, user *model
 	hashedPassword := r.hasher.Hash(user.PasswordHash)
 
 	_, err := r.db.ExecContext(ctx, `
-        INSERT INTO users (full_name, username, email, bio, user_type, password_hash)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO users (full_name, username, email, bio, user_type, password_hash, deleted_at)
+        VALUES ($1, $2, $3, $4, $5, $6, now())
     `, user.FullName, user.Username, user.Email, user.Bio, user.UserType, hashedPassword)
 	return err
 }
@@ -116,4 +117,15 @@ func (r *authenticationRepositoryImpl) ChangePassword(ctx context.Context, email
         WHERE email = $2
     `, user.PasswordHash, user.Email)
 	return err
+}
+
+func (r *authenticationRepositoryImpl) UpdateUserToActive(ctx context.Context, email string) error {
+	query := `
+		UPDATE users SET deleted_at = NULL WHERE email = $1
+	`
+	_, err := r.db.ExecContext(ctx, query, email)
+	if err != nil {
+		return err
+	}
+	return nil
 }

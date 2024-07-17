@@ -35,6 +35,7 @@ func NewUserHandler(userService services.UserManagementService, log *logrus.Logg
 // @Accept  json
 // @Produce  json
 // @Param user_id path string true "user id"
+// @security BearerAuth
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]string
 // @Failure 401 {object} map[string]string
@@ -61,6 +62,7 @@ func (h *userHandlerImpl) GetUserInfo(ctx *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param updatedUser body authentication_service.UpdateUserInfoRequest true "update user information"
+// @security BearerAuth
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]string
 // @Failure 401 {object} map[string]string
@@ -88,6 +90,7 @@ func (h *userHandlerImpl) UpdateUserInfo(ctx *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param id path string true "user id"
+// @security BearerAuth
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]string
 // @Failure 401 {object} map[string]string
@@ -109,7 +112,7 @@ func (h *userHandlerImpl) DeleteUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
 }
 
-// @Summary Get all users with pagination and sorting
+// @Summary Get all users with page and sorting
 // @Description Retrieve a list of users with pagination and sorting
 // @Tags User Management
 // @Accept  json
@@ -117,6 +120,7 @@ func (h *userHandlerImpl) DeleteUser(ctx *gin.Context) {
 // @Param limit query int true "Number of users per page"
 // @Param page query int true "Page number"
 // @Param order_by query string false "Field to order by (e.g., 'name', 'email')"
+// @security BearerAuth
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -138,7 +142,7 @@ func (h *userHandlerImpl) GetUsers(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"users": res})
+	ctx.JSON(http.StatusOK, gin.H{"users": res.Users})
 }
 
 // @Summary Change user type
@@ -148,6 +152,7 @@ func (h *userHandlerImpl) GetUsers(ctx *gin.Context) {
 // @Produce  json
 // @Param user_id query string true "user id"
 // @Param user_type query string true "user type"
+// @security BearerAuth
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string

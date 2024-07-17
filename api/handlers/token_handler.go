@@ -47,6 +47,7 @@ func (h *tokenHandlerImpl) GenerateToken(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param refreshToken body authentication_service.RefreshTokenRequest true "Refresh Token Request"
+// @security BearerAuth
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]string
 // @Failure 401 {object} map[string]string

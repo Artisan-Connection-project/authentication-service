@@ -41,3 +41,20 @@
 {"level":"info","msg":"Shutting down server...","time":"2024-07-16T13:52:00+05:00"}
 {"level":"info","msg":"Shutting down server...","time":"2024-07-16T18:04:19+05:00"}
 {"level":"fatal","msg":"Failed to listen on port 50051: listen tcp :50051: bind: address already in use","time":"2024-07-16T21:15:42+05:00"}
+{"level":"info","msg":"Shutting down server...","time":"2024-07-17T19:27:49+05:00"}
+{"level":"info","msg":"Shutting down server...","time":"2024-07-17T19:28:38+05:00"}
+{"level":"info","msg":"Shutting down server...","time":"2024-07-17T19:30:18+05:00"}
+{"level":"error","msg":"page and limit must be greater than zero","time":"2024-07-17T19:30:58+05:00"}
+{"level":"error","msg":"failed to get users info: missing destination name full_name in *[]*authentication_service.User","time":"2024-07-17T19:31:05+05:00"}
+{"level":"info","msg":"Shutting down server...","time":"2024-07-17T19:32:24+05:00"}
+{"level":"info","msg":"Shutting down server...","time":"2024-07-17T19:36:24+05:00"}
+{"level":"info","msg":"Shutting down server...","time":"2024-07-17T19:37:55+05:00"}
+{"level":"info","msg":"Shutting down server...","time":"2024-07-17T21:03:09+05:00"}
+{"level":"info","msg":"Shutting down server...","time":"2024-07-17T21:42:53+05:00"}
+{"level":"error","msg":"pq: duplicate key value violates unique constraint \"users_username_key\"","time":"2024-07-17T21:45:43+05:00"}
+{"level":"info","msg":"Shutting down server...","time":"2024-07-17T21:50:06+05:00"}
+{"level":"info","msg":"Shutting down server...","time":"2024-07-17T21:51:59+05:00"}
+{"level":"error","msg":"pq: duplicate key value violates unique constraint \"users_username_key\"","time":"2024-07-17T21:52:29+05:00"}
+{"level":"error","msg":"pq: duplicate key value violates unique constraint \"users_email_key\"","time":"2024-07-17T21:52:49+05:00"}
+{"level":"info","msg":"Shutting down server...","time":"2024-07-17T21:57:01+05:00"}
+{"level":"info","msg":"Shutting down server...","time":"2024-07-17T21:57:14+05:00"}
