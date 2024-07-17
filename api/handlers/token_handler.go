@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 type TokenHandler interface {
@@ -14,22 +15,25 @@ type TokenHandler interface {
 }
 
 type tokenHandlerImpl struct {
+	log          *logrus.Logger
 	tokenService services.TokenService
 }
 
-func NewTokenHandler(tokenSer services.TokenService) TokenHandler {
-	return &tokenHandlerImpl{tokenService: tokenSer}
+func NewTokenHandler(tokenSer services.TokenService, log *logrus.Logger) TokenHandler {
+	return &tokenHandlerImpl{tokenService: tokenSer, log: log}
 }
 
 func (h *tokenHandlerImpl) GenerateToken(c *gin.Context) {
 	var req auth.GenerateTokenRequest
 	if err := c.BindJSON(&req); err != nil {
+		h.log.Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
 
 	resp, err := h.tokenService.GenerateToken(c, &req)
 	if err != nil {
+		h.log.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 		return
 	}
@@ -53,12 +57,14 @@ func (h *tokenHandlerImpl) RefreshToken(c *gin.Context) {
 
 	var req auth.RefreshTokenRequest
 	if err := c.BindJSON(&req); err != nil {
+		h.log.Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
 
 	resp, err := h.tokenService.RefreshToken(c, userID, &req)
 	if err != nil {
+		h.log.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to refresh token"})
 		return
 	}

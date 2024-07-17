@@ -1,10 +1,5 @@
 basePath: /
 definitions:
-  authentication_service.CancelTokenRequest:
-    properties:
-      access_token:
-        type: string
-    type: object
   authentication_service.LoginRequest:
     properties:
       email:
@@ -346,18 +341,22 @@ paths:
       summary: Getting user by its id
       tags:
       - User Management
-  /revoke/{user_id}:
-    post:
+  /api/v1/users/type/:
+    put:
       consumes:
       - application/json
-      description: Cancels a given access or refresh token
+      description: Change user's type to admin, user, artisan or other
       parameters:
-      - description: Cancel Token Request
-        in: body
-        name: cancelToken
+      - description: user id
+        in: query
+        name: user_id
         required: true
-        schema:
-          $ref: '#/definitions/authentication_service.CancelTokenRequest'
+        type: string
+      - description: user type
+        in: query
+        name: user_type
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -372,21 +371,15 @@ paths:
             additionalProperties:
               type: string
             type: object
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties:
-              type: string
-            type: object
         "500":
           description: Internal Server Error
           schema:
             additionalProperties:
               type: string
             type: object
-      summary: Cancel a token
+      summary: Change user type
       tags:
-      - Tokens
+      - User Management
 schemes:
 - http
 securityDefinitions:

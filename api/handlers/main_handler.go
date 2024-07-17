@@ -1,6 +1,10 @@
 package handlers
 
-import "authentication-service/services"
+import (
+	"authentication-service/services"
+
+	"github.com/sirupsen/logrus"
+)
 
 type MainHandler interface {
 	Authentication() AuthenticationHandler
@@ -14,11 +18,11 @@ type mainHandler struct {
 	token          TokenHandler
 }
 
-func NewMainHandler(authSer services.AuthenticationService, userSer services.UserManagementService, tokenSer services.TokenService) MainHandler {
+func NewMainHandler(authSer services.AuthenticationService, userSer services.UserManagementService, tokenSer services.TokenService, log *logrus.Logger) MainHandler {
 	return &mainHandler{
-		authentication: NewAuthenticationHandler(authSer),
-		user:           NewUserHandler(userSer),
-		token:          NewTokenHandler(tokenSer),
+		authentication: NewAuthenticationHandler(authSer, log),
+		user:           NewUserHandler(userSer, log),
+		token:          NewTokenHandler(tokenSer, log),
 	}
 }
 

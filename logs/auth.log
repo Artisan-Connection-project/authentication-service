@@ -35,3 +35,9 @@
 {"level":"fatal","msg":"Error getting users info: pq: syntax error at or near \"=\"","time":"2024-07-14T14:30:31+05:00"}
 {"level":"fatal","msg":"Error getting users info: pq: syntax error at or near \"users\"","time":"2024-07-14T14:30:46+05:00"}
 {"level":"fatal","msg":"Error getting users info: no such user: \u003cnil\u003e","time":"2024-07-14T14:33:53+05:00"}
+{"level":"fatal","msg":"Failed to listen on port 50051: listen tcp :50051: bind: address already in use","time":"2024-07-16T13:48:40+05:00"}
+{"level":"info","msg":"Shutting down server...","time":"2024-07-16T13:51:10+05:00"}
+{"level":"info","msg":"Shutting down server...","time":"2024-07-16T13:51:25+05:00"}
+{"level":"info","msg":"Shutting down server...","time":"2024-07-16T13:52:00+05:00"}
+{"level":"info","msg":"Shutting down server...","time":"2024-07-16T18:04:19+05:00"}
+{"level":"fatal","msg":"Failed to listen on port 50051: listen tcp :50051: bind: address already in use","time":"2024-07-16T21:15:42+05:00"}

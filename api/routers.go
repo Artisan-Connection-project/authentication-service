@@ -46,7 +46,6 @@ func SetupRouters(r *gin.Engine, h handlers.MainHandler, config *configs.Config)
 		users := api.Group("/users")
 		{
 			users.GET("/all", h.User().GetUsers)
-			users.GET("/:username_or_email", h.User().GetUserByUsernameOrEmail)
 
 			users.GET("/profile/:user_id", h.User().GetUserInfo)
 

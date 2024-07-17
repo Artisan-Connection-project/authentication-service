@@ -447,9 +447,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/revoke/{user_id}": {
-            "post": {
-                "description": "Cancels a given access or refresh token",
+        "/api/v1/users/type/": {
+            "put": {
+                "description": "Change user's type to admin, user, artisan or other",
                 "consumes": [
                     "application/json"
                 ],
@@ -457,18 +457,23 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Tokens"
+                    "User Management"
                 ],
-                "summary": "Cancel a token",
+                "summary": "Change user type",
                 "parameters": [
                     {
-                        "description": "Cancel Token Request",
-                        "name": "cancelToken",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/authentication_service.CancelTokenRequest"
-                        }
+                        "type": "string",
+                        "description": "user id",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "user type",
+                        "name": "user_type",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -481,15 +486,6 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -511,14 +507,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "authentication_service.CancelTokenRequest": {
-            "type": "object",
-            "properties": {
-                "access_token": {
-                    "type": "string"
-                }
-            }
-        },
         "authentication_service.LoginRequest": {
             "type": "object",
             "properties": {

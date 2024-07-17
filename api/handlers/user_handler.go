@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 type UserHandler interface {
@@ -13,17 +14,18 @@ type UserHandler interface {
 	UpdateUserInfo(ctx *gin.Context)
 	DeleteUser(ctx *gin.Context)
 	GetUsers(ctx *gin.Context)
-	GetUserByUsernameOrEmail(ctx *gin.Context)
 	ChangeUserType(ctx *gin.Context)
 }
 
 type userHandlerImpl struct {
 	userService services.UserManagementService
+	log         *logrus.Logger
 }
 
-func NewUserHandler(userService services.UserManagementService) UserHandler {
+func NewUserHandler(userService services.UserManagementService, log *logrus.Logger) UserHandler {
 	return &userHandlerImpl{
 		userService: userService,
+		log:         log,
 	}
 }
 
@@ -44,6 +46,7 @@ func (h *userHandlerImpl) GetUserInfo(ctx *gin.Context) {
 	res, err := h.userService.GetUserInfo(ctx, req)
 	if err != nil {
 		if err.Error() == "user does not exist" {
+			h.log.Error("user does not exist:" + err.Error())
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "user does not exist"})
 		}
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -66,11 +69,13 @@ func (h *userHandlerImpl) GetUserInfo(ctx *gin.Context) {
 func (h *userHandlerImpl) UpdateUserInfo(ctx *gin.Context) {
 	req := &auth.UpdateUserInfoRequest{}
 	if err := ctx.ShouldBindJSON(req); err != nil {
+		h.log.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	res, err := h.userService.UpdateUserInfo(ctx, req)
 	if err != nil {
+		h.log.Error(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -94,8 +99,10 @@ func (h *userHandlerImpl) DeleteUser(ctx *gin.Context) {
 	_, err := h.userService.DeleteUserInfo(ctx, req)
 	if err != nil {
 		if err.Error() == "user does not exist" {
+			h.log.Error(err)
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "user does not exist"})
 		}
+		h.log.Error(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -127,16 +134,57 @@ func (h *userHandlerImpl) GetUsers(ctx *gin.Context) {
 
 	res, err := h.userService.GetUsersInfo(ctx, req)
 	if err != nil {
+		h.log.Error(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"users": res})
 }
 
-func (h *userHandlerImpl) GetUserByUsernameOrEmail(ctx *gin.Context) {
-	// Implement user retrieval by username or email logic
-}
-
+// @Summary Change user type
+// @Description Change user's type to admin, user, artisan or other
+// @Tags User Management
+// @Accept  json
+// @Produce  json
+// @Param user_id query string true "user id"
+// @Param user_type query string true "user type"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /api/v1/users/type/ [put]
 func (h *userHandlerImpl) ChangeUserType(ctx *gin.Context) {
-	// Implement user type change logic
+	userId := ctx.Query("user_id")
+	userType := ctx.Query("user_type")
+
+	if userId == "" || userType == "" {
+		h.log.Error("user_id and user_type cannot be empty")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "user_id and user_type are required"})
+		return
+	}
+
+	getReq := auth.GetUserInfoRequest{Id: userId}
+	res, err := h.userService.GetUserInfo(ctx, &getReq)
+	if err != nil {
+		h.log.Error(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	upReq := auth.UpdateUserInfoRequest{
+		Id:       res.User.Id,
+		Username: res.User.Username,
+		FullName: res.User.FullName,
+		Email:    res.User.Email,
+		UserType: userType,
+		Bio:      res.User.Bio,
+	}
+
+	upRes, err := h.userService.UpdateUserInfo(ctx, &upReq)
+
+	if err != nil {
+		h.log.Error(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"user": upRes})
 }

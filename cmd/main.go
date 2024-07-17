@@ -49,7 +49,7 @@ func main() {
 	userService := services.NewUserManagementService(userRepo)
 	authService := services.NewAuthenticationService(authRepo, tokenService, emailService)
 
-	mainHandler := handlers.NewMainHandler(authService, userService, tokenService)
+	mainHandler := handlers.NewMainHandler(authService, userService, tokenService, log)
 
 	go func() {
 		router := gin.Default()

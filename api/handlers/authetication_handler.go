@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 type AuthenticationHandler interface {
@@ -18,11 +19,12 @@ type AuthenticationHandler interface {
 }
 
 type authenticationHandlerImpl struct {
+	log         *logrus.Logger
 	authService services.AuthenticationService
 }
 
-func NewAuthenticationHandler(authService services.AuthenticationService) AuthenticationHandler {
-	return &authenticationHandlerImpl{authService: authService}
+func NewAuthenticationHandler(authService services.AuthenticationService, log *logrus.Logger) AuthenticationHandler {
+	return &authenticationHandlerImpl{authService: authService, log: log}
 }
 
 // @Summary Register the authentication
@@ -37,14 +39,17 @@ func NewAuthenticationHandler(authService services.AuthenticationService) Authen
 // @Failure 500 {object} map[string]string
 // @Router /api/v1/auth/register [post]
 func (h *authenticationHandlerImpl) Register(ctx *gin.Context) {
+
 	var reReq authentication_service.RegisterRequest
 	if err := ctx.ShouldBindJSON(&reReq); err != nil {
+		h.log.Error(err)
 		ctx.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
 	reRes, err := h.authService.Register(ctx, &reReq)
 	if err != nil {
+		h.log.Error(err)
 		ctx.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
@@ -81,12 +86,14 @@ func (h *authenticationHandlerImpl) Login(ctx *gin.Context) {
 func (h *authenticationHandlerImpl) Logout(ctx *gin.Context) {
 	var req auth.LogoutRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		h.log.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	_, err := h.authService.Logout(ctx.Request.Context(), &req)
 	if err != nil {
+		h.log.Error(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -97,12 +104,14 @@ func (h *authenticationHandlerImpl) Logout(ctx *gin.Context) {
 func (h *authenticationHandlerImpl) ChangePassword(ctx *gin.Context) {
 	var req auth.ChangePasswordRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		h.log.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	_, err := h.authService.ChangePassword(ctx.Request.Context(), &req)
 	if err != nil {
+		h.log.Error(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -113,12 +122,14 @@ func (h *authenticationHandlerImpl) ChangePassword(ctx *gin.Context) {
 func (h *authenticationHandlerImpl) ResetPassword(ctx *gin.Context) {
 	var req auth.ResetPasswordRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		h.log.Error(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	_, err := h.authService.ResetPassword(ctx.Request.Context(), &req)
 	if err != nil {
+		h.log.Error(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -139,5 +150,6 @@ func (h *authenticationHandlerImpl) ResetPassword(ctx *gin.Context) {
 // 		return
 // 	}
 
-// 	ctx.JSON(http.StatusOK, gin.H{"message": "Password reset successfully"})
-// }
+//		ctx.JSON(http.StatusOK, gin.H{"message": "Password reset successfully"})
+//	}
+//
